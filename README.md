@@ -1,3 +1,5 @@
+https://travis-ci.org/inkycode/nexus.svg?branch=master
+
 # Nexus
 A tiny service container library for Java.
 
