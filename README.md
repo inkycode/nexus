@@ -1,5 +1,5 @@
 # Nexus
-A tiny service container library for Java
+A tiny service container library for Java.
 
 ## Build
 ```
