@@ -1,6 +1,4 @@
-![alt tag](https://travis-ci.org/inkycode/nexus.svg?branch=master)
-
-# Nexus
+# Nexus [![Build Status](https://travis-ci.org/inkycode/nexus.svg?branch=master)](https://travis-ci.org/inkycode/nexus)
 A tiny service container library for Java.
 
 ## Build
