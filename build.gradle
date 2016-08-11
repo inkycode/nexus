@@ -9,7 +9,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'com.inkycode'
-version = '1.0.0'
+version = System.getenv('TRAVIS_TAG') ? System.getenv('TRAVIS_TAG') : "build-${System.getenv('TRAVIS_BUILD_NUMBER')}"
 
 repositories {
     jcenter()
@@ -45,7 +45,7 @@ publishing {
             from components.java
             groupId 'com.inkycode'
             artifactId 'nexus'
-            version '1.0.0'
+            version "${project.version}"
 
             artifact sourcesJar
             artifact javadocJar
@@ -69,8 +69,8 @@ bintray {
         issueTrackerUrl = 'https://github.com/inkycode/nexus/issues'
         vcsUrl = 'https://github.com/inkycode/nexus.git'
         version {
-            name = '1.0.0'
-            desc = 'Nexus 1.0.0'
+            name = "${project.version}"
+            desc = "Nexus ${project.version}"
             released = new Date()
         }
     }

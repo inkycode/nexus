@@ -1,4 +1,4 @@
-# Nexus [![Build Status](https://travis-ci.org/inkycode/nexus.svg?branch=master)](https://travis-ci.org/inkycode/nexus)
+# Nexus [![Build Status](https://travis-ci.org/inkycode/nexus.svg?branch=master)](https://travis-ci.org/inkycode/nexus) [![Download](https://api.bintray.com/packages/inkycoder/maven/com.inkycode/images/download.svg)](https://bintray.com/inkycoder/maven/com.inkycode/_latestVersion)
 A tiny service container library for Java.
 
 ## Build
