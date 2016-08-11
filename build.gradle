@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'maven'
 
 group = 'com.inkycode.nexus'
 version = '1.0.0'
@@ -15,4 +16,12 @@ dependencies {
             'com.google.auto:auto-common:0.6'
 
     testCompile 'junit:junit:4.12'
+}
+
+task release(dependsOn: build) {
+    doLast {
+        pom {
+
+        }.writeTo("$mavenPomDir/pom.xml")
+    }
 }

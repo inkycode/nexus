@@ -20,6 +20,10 @@
     {
       "includePattern": "build/libs/(.*)",
       "uploadPattern": "nexus-1.0.0.jar"
+    },
+    {
+      "includePattern": "build/poms/(.*)",
+      "uploadPattern": "nexus-1.0.0.pom"
     }
   ],
 
