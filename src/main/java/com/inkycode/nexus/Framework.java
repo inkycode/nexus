@@ -136,9 +136,11 @@ public class Framework {
 
     /**
      * Attempts to obtain a provider for the given service.
-     * 
+     *
      * @param service
      *            the service to obtain a provider for.
+     * @param <T>
+     *            the type of service.
      * @return a provider for the given service, or null if one can not be
      *         found.
      */
