@@ -9,7 +9,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'com.inkycode'
-if (System.getenv('TRAVIS') == true) {
+if (System.getenv('TRAVIS')) {
     version = System.getenv('TRAVIS_TAG') ? System.getenv('TRAVIS_TAG') : "development-${System.getenv('TRAVIS_BUILD_NUMBER')}"
 } else {
     version = '1.0.0-SNAPSHOT'
