@@ -16,7 +16,7 @@ interface HelloWorldService {
 
 /* ... */
 
-@service
+@Service
 public class HelloWorldServiceImpl implements HelloWorldService {
 
     @Override
@@ -44,10 +44,10 @@ interface CommandService {
 
 /* ... */
 
-@service
+@Service
 public class CommandServiceImpl implements CommandService {
 
-    @inject
+    @Inject
     private HelloWorldService helloWorldService;
 
     @Override
