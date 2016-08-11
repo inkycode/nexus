@@ -16,12 +16,22 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ *
+ * The Framework class is a singleton to be used at runtime.
+ *
+ */
 public class Framework {
 
     private static Logger LOG = LoggerFactory.getLogger(Framework.class);
 
     private static Framework framework;
 
+    /**
+     * Factory method to generate a Framework instance.
+     *
+     * @return a Framework instance.
+     */
     public static Framework getInstance() {
         if (framework == null) {
             framework = new Framework();
@@ -124,6 +134,14 @@ public class Framework {
         }
     }
 
+    /**
+     * Attempts to obtain a provider for the given service.
+     * 
+     * @param service
+     *            the service to obtain a provider for.
+     * @return a provider for the given service, or null if one can not be
+     *         found.
+     */
     @SuppressWarnings("unchecked")
     public <T> T getService(final Class<T> service) {
         if (this.serviceMap.containsKey(service)) {

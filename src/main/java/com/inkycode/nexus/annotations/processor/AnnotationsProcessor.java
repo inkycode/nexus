@@ -9,6 +9,11 @@ import javax.annotation.processing.SupportedSourceVersion;
 import com.google.auto.common.BasicAnnotationProcessor;
 import com.inkycode.nexus.annotations.processor.tasks.ServiceTask;
 
+/**
+ *
+ * Executed at compile time and performs the service task.
+ *
+ */
 @SupportedSourceVersion(RELEASE_8)
 public class AnnotationsProcessor extends BasicAnnotationProcessor {
 

@@ -12,15 +12,34 @@ import javax.lang.model.type.TypeMirror;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.inkycode.nexus.annotations.Service;
 
+/**
+ *
+ * A descriptor for a service which allows for easy serialization when
+ * generating a services descriptor.
+ *
+ */
 public class ServiceDescriptor {
 
     private String service;
     private String provider;
     private String factory;
 
+    /**
+     * Default constructor.
+     */
     public ServiceDescriptor() {
     }
 
+    /**
+     * Generates a service descriptor for the given service and provider.
+     *
+     * @param processingEnv
+     *            the processing environment.
+     * @param service
+     *            the service to generate a descriptor for.
+     * @param provider
+     *            the service provider.
+     */
     public ServiceDescriptor(final ProcessingEnvironment processingEnv, final Service service, final TypeElement provider) {
         this.provider = provider.getQualifiedName().toString();
 
@@ -55,18 +74,38 @@ public class ServiceDescriptor {
         }
     }
 
+    /**
+     * Returns the service.
+     *
+     * @return the service.
+     */
     public String getService() {
         return this.service;
     }
 
+    /**
+     * Returns the provider.
+     *
+     * @return the provider.
+     */
     public String getProvider() {
         return this.provider;
     }
 
+    /**
+     * Returns the factory.
+     *
+     * @return the factory.
+     */
     public String getFactory() {
         return this.factory;
     }
 
+    /**
+     * Determains if the service descriptor is valid.
+     *
+     * @return true if valid, false otherwise.
+     */
     @JsonIgnore
     public boolean isValid() {
         return (this.service != null && this.provider != null);

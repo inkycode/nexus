@@ -28,21 +28,38 @@ import com.google.common.collect.SetMultimap;
 import com.inkycode.nexus.ServiceDescriptor;
 import com.inkycode.nexus.annotations.Service;
 
+/**
+ *
+ * A task to generate a services descriptor file for scanned classes.
+ *
+ */
 public class ServiceTask implements ProcessingStep {
 
     private List<ServiceDescriptor> services;
 
     private final ProcessingEnvironment processingEnv;
 
+    /**
+     * Generates a new service task with the given processing environment.
+     *
+     * @param processingEnv
+     *            the processing environment.
+     */
     public ServiceTask(final ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<? extends Class<? extends Annotation>> annotations() {
         return ImmutableSet.of(Service.class);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Element> process(final SetMultimap<Class<? extends Annotation>, Element> elementsByAnnotation) {
         this.services = new ArrayList<ServiceDescriptor>();
