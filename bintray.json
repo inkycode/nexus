@@ -1,6 +1,6 @@
 {
   "package": {
-    "name": "nexus",
+    "name": "com.inkycode.nexus",
     "repo": "maven",
     "subject": "inkycoder",
     "issue_tracker_url": "https://github.com/inkycode/nexus/issues",
@@ -13,7 +13,7 @@
   },
 
   "version": {
-    "name": "1.0.0-SNAPSHOT"
+    "name": "1.0.0"
   },
 
   "files": [
