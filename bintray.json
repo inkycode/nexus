@@ -1,6 +1,6 @@
 {
   "package": {
-    "name": "com.inkycode.nexus",
+    "name": "com.inkycode",
     "repo": "maven",
     "subject": "inkycoder",
     "issue_tracker_url": "https://github.com/inkycode/nexus/issues",

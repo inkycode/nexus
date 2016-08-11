@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-group = 'com.inkycode.nexus'
+group = 'com.inkycode'
 version = '1.0.0'
 
 repositories {
@@ -21,7 +21,11 @@ dependencies {
 task release(dependsOn: build) {
     doLast {
         pom {
-
+            project {
+                name 'Nexus'
+                description 'A tiny service container library for Java'
+                url 'https://github.com/inkycode/nexus'
+            }
         }.writeTo("$mavenPomDir/pom.xml")
     }
 }
