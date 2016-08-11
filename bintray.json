@@ -19,7 +19,7 @@
   "files": [
     {
       "includePattern": "build/libs/(.*)",
-      "uploadPattern": "nexus-1.0.0"
+      "uploadPattern": "nexus-1.0.0.jar"
     }
   ],
 
