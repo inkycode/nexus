@@ -9,7 +9,11 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'com.inkycode'
-version = System.getenv('TRAVIS_TAG') ? System.getenv('TRAVIS_TAG') : "build-${System.getenv('TRAVIS_BUILD_NUMBER')}"
+if (System.getenv('TRAVIS') == true) {
+    version = System.getenv('TRAVIS_TAG') ? System.getenv('TRAVIS_TAG') : "development-${System.getenv('TRAVIS_BUILD_NUMBER')}"
+} else {
+    version = '1.0.0-SNAPSHOT'
+}
 
 repositories {
     jcenter()
@@ -59,7 +63,7 @@ bintray {
 
     publications = ['mavenJava']
 
-    publish = true
+    publish = System.getenv('TRAVIS_TAG') ? true : false
 
     pkg {
         repo = 'maven'
