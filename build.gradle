@@ -63,6 +63,7 @@ bintray {
 
     publications = ['mavenJava']
 
+    dryRun = System.getenv('TRAVIS_TAG') ? false : true
     publish = System.getenv('TRAVIS_TAG') ? true : false
 
     pkg {
