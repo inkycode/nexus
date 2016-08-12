@@ -1,19 +1,17 @@
-plugins {
-    id 'com.jfrog.bintray' version '1.7'
+buildscript {
+    repositories {
+      jcenter()
+    }
+
+    dependencies {
+		    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
+    }
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'maven-publish'
-
-    ext {
-        travisEnabled = System.getenv('TRAVIS') ? true : false
-        travisTag = System.getenv('TRAVIS_TAG')
-        travisBuildNumber = System.getenv('TRAVIS_BUILD_NUMBER')
-
-        bintrayUser = System.getenv('BINTRAY_USER')
-        bintrayApiKey = System.getenv('BINTRAY_API_KEY')
-    }
+    apply plugin: 'com.jfrog.bintray'
 
     repositories {
         jcenter()
@@ -23,6 +21,16 @@ subprojects {
         compile 'org.slf4j:slf4j-api:1.7.21'
 
         testCompile 'junit:junit:4.12'
+    }
+
+    ext {
+        deploy = false
+        travisEnabled = System.getenv('TRAVIS') ? true : false
+        travisTag = System.getenv('TRAVIS_TAG')
+        travisBuildNumber = System.getenv('TRAVIS_BUILD_NUMBER')
+
+        bintrayUser = System.getenv('BINTRAY_USER')
+        bintrayApiKey = System.getenv('BINTRAY_API_KEY')
     }
 
     group 'com.inkycode.nexus'
@@ -48,43 +56,26 @@ subprojects {
         archives sourcesJar, javadocJar
     }
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
+    bintray {
+        user = project.bintrayUser
+        key = project.bintrayApiKey
 
-                groupId project.group
-                artifactId project.archivesBaseName
-                version project.version
+        publications = ['mavenJava']
 
-                artifact sourcesJar
-                artifact javadocJar
-            }
-        }
-    }
+        dryRun = project.travisTag ? false : true
+        publish = project.travisTag ? true : false
 
-    if (project.bintrayUser && project.bintrayApiKey) {
-        bintray {
-            user = project.bintrayUser
-            key = project.bintrayApiKey
-
-            publications = ['mavenJava']
-
-            dryRun = project.travisTag ? false : true
-            publish = project.travisTag ? true : false
-
-            pkg {
-                repo = 'maven'
-                name = project.group
-                licenses = ['MIT']
-                websiteUrl = 'https://github.com/inkycode/nexus'
-                issueTrackerUrl = 'https://github.com/inkycode/nexus/issues'
-                vcsUrl = 'https://github.com/inkycode/nexus.git'
-                version {
-                    name = project.version
-                    desc = "Nexus ${project.archivesBaseName}-${project.version}"
-                    released = new Date()
-                }
+        pkg {
+            repo = 'maven'
+            name = project.group
+            licenses = ['MIT']
+            websiteUrl = 'https://github.com/inkycode/nexus'
+            issueTrackerUrl = 'https://github.com/inkycode/nexus/issues'
+            vcsUrl = 'https://github.com/inkycode/nexus.git'
+            version {
+                name = project.version
+                desc = "Nexus ${project.archivesBaseName}-${project.version}"
+                released = new Date()
             }
         }
     }
