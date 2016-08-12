@@ -56,12 +56,23 @@ subprojects {
         archives sourcesJar, javadocJar
     }
 
+    publishing {
+        publications {
+            mavenJava (MavenPublication) {
+                from components.java
+
+                artifact sourcesJar
+                artifact javadocJar
+            }
+        }
+    }
+
     bintray {
         user = project.bintrayUser
         key = project.bintrayApiKey
 
-        //publications = ['mavenJava']
-        configurations = ['archives']
+        publications = ['mavenJava']
+        //configurations = ['archives']
 
         //dryRun = project.travisTag ? false : true
         publish = project.travisTag ? true : false
