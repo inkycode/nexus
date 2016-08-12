@@ -10,7 +10,7 @@ buildscript {
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'maven-publish'
+    apply plugin: 'maven'
     apply plugin: 'com.jfrog.bintray'
 
     repositories {
@@ -24,7 +24,6 @@ subprojects {
     }
 
     ext {
-        deploy = false
         travisEnabled = System.getenv('TRAVIS') ? true : false
         travisTag = System.getenv('TRAVIS_TAG')
         travisBuildNumber = System.getenv('TRAVIS_BUILD_NUMBER')
@@ -34,7 +33,7 @@ subprojects {
     }
 
     group 'com.inkycode.nexus'
-    version 'development'
+    version 'local-development'
     if (project.travisEnabled) {
         version = project.travisTag ? project.travisTag : "development-${project.travisBuildNumber}"
     }
@@ -56,25 +55,13 @@ subprojects {
         archives sourcesJar, javadocJar
     }
 
-    publishing {
-        publications {
-            mavenJava (MavenPublication) {
-                from components.java
-
-                artifact sourcesJar
-                artifact javadocJar
-            }
-        }
-    }
-
     bintray {
         user = project.bintrayUser
         key = project.bintrayApiKey
 
-        publications = ['mavenJava']
-        //configurations = ['archives']
+        configurations = ['archives']
 
-        //dryRun = project.travisTag ? false : true
+        dryRun = project.travisTag ? false : true
         publish = project.travisTag ? true : false
 
         pkg {
@@ -86,7 +73,6 @@ subprojects {
             vcsUrl = 'https://github.com/inkycode/nexus.git'
             version {
                 name = project.version
-                desc = "Nexus ${project.archivesBaseName}-${project.version}"
                 released = new Date()
             }
         }
