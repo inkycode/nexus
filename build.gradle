@@ -60,9 +60,10 @@ subprojects {
         user = project.bintrayUser
         key = project.bintrayApiKey
 
-        publications = ['mavenJava']
+        //publications = ['mavenJava']
+        configurations = ['archives']
 
-        dryRun = project.travisTag ? false : true
+        //dryRun = project.travisTag ? false : true
         publish = project.travisTag ? true : false
 
         pkg {
