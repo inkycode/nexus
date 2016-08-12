@@ -2,81 +2,90 @@ plugins {
     id 'com.jfrog.bintray' version '1.7'
 }
 
-apply plugin: 'java'
-apply plugin: 'maven-publish'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    ext {
+        travisEnabled = System.getenv('TRAVIS') ? true : false
+        travisTag = System.getenv('TRAVIS_TAG')
+        travisBuildNumber = System.getenv('TRAVIS_BUILD_NUMBER')
 
-group = 'com.inkycode'
-if (System.getenv('TRAVIS')) {
-    version = System.getenv('TRAVIS_TAG') ? System.getenv('TRAVIS_TAG') : "development-${System.getenv('TRAVIS_BUILD_NUMBER')}"
-} else {
-    version = '1.0.0-SNAPSHOT'
-}
+        bintrayUser = System.getenv('BINTRAY_USER')
+        bintrayApiKey = System.getenv('BINTRAY_API_KEY')
+    }
 
-repositories {
-    jcenter()
-}
+    repositories {
+        jcenter()
+    }
 
-dependencies {
-    compile 'org.slf4j:slf4j-api:1.7.21',
-            'com.fasterxml.jackson.core:jackson-databind:2.0.1',
-            'commons-io:commons-io:2.5',
-            'javax.inject:javax.inject:1',
-            'com.google.auto:auto-common:0.6'
+    dependencies {
+        compile 'org.slf4j:slf4j-api:1.7.21'
 
-    testCompile 'junit:junit:4.12'
-}
+        testCompile 'junit:junit:4.12'
+    }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
+    group 'com.inkycode.nexus'
+    version 'development'
+    if (project.travisEnabled) {
+        version = project.travisTag ? project.travisTag : "development-${project.travisBuildNumber}"
+    }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-artifacts {
-    archives sourcesJar, javadocJar
-}
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            groupId 'com.inkycode'
-            artifactId 'nexus'
-            version "${project.version}"
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
 
-            artifact sourcesJar
-            artifact javadocJar
+    artifacts {
+        archives sourcesJar, javadocJar
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+
+                groupId project.group
+                artifactId project.archivesBaseName
+                version project.version
+
+                artifact sourcesJar
+                artifact javadocJar
+            }
         }
     }
-}
 
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_API_KEY')
+    if (project.bintrayUser && project.bintrayApiKey) {
+        bintray {
+            user = project.bintrayUser
+            key = project.bintrayApiKey
 
-    publications = ['mavenJava']
+            publications = ['mavenJava']
 
-    dryRun = System.getenv('TRAVIS_TAG') ? false : true
-    publish = System.getenv('TRAVIS_TAG') ? true : false
+            dryRun = project.travisTag ? false : true
+            publish = project.travisTag ? true : false
 
-    pkg {
-        repo = 'maven'
-        name = 'com.inkycode'
-        licenses = ['MIT']
-        websiteUrl = 'https://github.com/inkycode/nexus'
-        issueTrackerUrl = 'https://github.com/inkycode/nexus/issues'
-        vcsUrl = 'https://github.com/inkycode/nexus.git'
-        version {
-            name = "${project.version}"
-            desc = "Nexus ${project.version}"
-            released = new Date()
+            pkg {
+                repo = 'maven'
+                name = project.group
+                licenses = ['MIT']
+                websiteUrl = 'https://github.com/inkycode/nexus'
+                issueTrackerUrl = 'https://github.com/inkycode/nexus/issues'
+                vcsUrl = 'https://github.com/inkycode/nexus.git'
+                version {
+                    name = project.version
+                    desc = "Nexus ${project.archivesBaseName}-${project.version}"
+                    released = new Date()
+                }
+            }
         }
     }
 }
