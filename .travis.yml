@@ -28,7 +28,7 @@ deploy:
   provider: releases
   api_key:
     secure: JBw1mtvZKkFsuprUhksw/IR4Ntap8+2NwXn/WTvYJ6OlOxZMulUf+SCd5X1uZIZt8AQGNZk3WvQQAwjeGrwuC5kANzK0znV89y4WsH25f9IQVDHAc2em9FIWXqoiqsLqUolwpV74LnN2l721Z35vYGsLbZzK4U7HaKBsifzjKXBmPBSZeMgGFfawiIdUQelmHe5cGWq20McKgx7OW+qtsw5PmAU6qM/CenPeyVGd4RcW0SRI2oJ6zhsrAG2fcZz7iSZ5TsO6bVnIlAC1wMZrVdzqz0sgbdQIqWFLrE5spWWLMRqHeyVYP6HCQbzjHbwH2d1FMAOasQox2bGUZTD548QjlZAlksVViQp3CBKwJgHQb9Dy0QrI76iuaR22MznJ9VoC+yUasmZSgkNRBHovDDXiiGv/Woe5e6Z2ER3dA/G21QED7zHq2F3Fn3wyUcuWBe4cLr3HFWu4nv4sCQcKIUrjz5Hz3ca50gmq+P5uQJUl+tNRZJ1qoVezcIA/n5XbGrhTSRZqgIi8GW6NHSnkRv3IRGNMUsH0gK/1SUEnr5L79um1lzaK7F0+OTnMtmyuGT9jPN9/dJx38BlLmXQmfydspMwy9DiamPLQOF7JK8GaD9mD+97/Xg2F8Arjzf5B/iCMht0vnQ1ytZioOpJPwxRZjiOD7/PVW0Rx/ARvWLo=
-  file: "./core/build/libs/*.jar"
+  file: "${RELEASE_DIST}"
   on:
     tags: true
     repo: inkycode/nexus
