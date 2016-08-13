@@ -1,9 +1,34 @@
 language: java
+sudo: false
+
 jdk:
 - oraclejdk8
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
 script:
 - "./gradlew clean bintray"
+
 env:
   global:
   - secure: R1Vr3mfWm3pFi40tKeg1PtePULxH0TD17mox+Qiz4mKBjL5SrZlY9XXY+fGLdmvHeJw1JQL8iay6w30U/D0EZw3g5edQ3ctKrLbEP7Gzo4lGHfZVZOFgEYxoD+ITZfJyGgK2ntNQ9Potwofj4ObDZwldfi1gprKd67dXu7r1pq6cOKrisovtlt2syWsN/cKZRdMVwqIKtt//LraXLxterFB6xNLdS0m9Ju1YtB1eOpdNd4GUz1MHnE4ZUW3uKTm/2+h7RyCAzyn2UxROOJQTHRQR2madTEBZrxsTKd6VpuTZ8NYlMknp1o5tSrbDDnCEKa8lSg1dETgcd26pi2HnO/JoayYwUx2qPh9EZA3xABfVVZ53EaGez2rB8aTFnTXraM3YbeRQqytwdXYJXMxMuaIkqq+Q8v8pV0yGbuT8Nb5zPuJBWLeShddrUuRCOyGD5IqS9Cjz6cnX7+i7k5k1kXffJqJEG4/OVGB4xFVy4vuXwEA2XRXcVbR9+6M3somOYsh+pczmP60AfCqXD70yuNA8jBxWOUhKAN1oXjq6e+F0RHZM9Ys4y3dKnUTrY5MQ6Q5U9IhYWyNugcENCOTHZdZr4Uv4Jg8pobEA6fNqZSaYZgvefnnBeV0BGuNkrb+JI8S5yfe4OF7O7ZM0eKjgVHjwoW1PFcQowoHPYqNNAfo=
   - secure: Ogs7zJ+XQbus/XWWGwOLXVZqztNGJyaNsr/8WSfdulUV1VO3+5jGiW2cf8VI6Ug7cfqlCqfuCqJAItswIOj/KK83BI3+8cJPIz2YmYvzAQmtSfrpok96xJCyic06GemFBz99FpJ0QBvS1lrrnTAkdH/2FDxsPtokArw2S7zYo5DT3mdAAKSaa+60jzNGLex1RycHmK9pUidOOyYzjJq3CNR7MX2uMufQcYwsSkB+Mg0wqVSV92jd+8kqVim2eemAiYuoRVY6gMPVzTceE1fV23K5Za4RHzdah8seHt1DbVp3v9Yk3RKpeZUPw9BfSl6koWYbhMRsaxDertJlv+f4xhUO95PdzoM1Xf1NzuQKLH0uGMy/1cK96YEMVoEeni9aIWOv93mUDFtCce2UubzXpd2vhgRqSaXczmaUqQdtPq0yVuynLuqQn7TQsl8gYpR0Ban1L9oGROCjjP4Q5sO2WHQJqIV9n2BRpn7ea7yaSdZsD6jVZT237bKTvOdVp0z6VzQMrn1H0Cdodh5tGGyhmPvcxa6Xqdbuk02SjFHCCkJlEntW6XofuXOXyi2k3e1ff5i2qWthT2/xw6imsfpM7F43f/TFRP1l1IeEnJyHVAiPnZVpYTyccviULqK6tDdmuXI3T11/5G5XjS83bXvnbvmeXmEoNEbSDe5xuuWRYhY=
+
+before_deploy:
+  - ./gradlew zipDist
+  - export RELEASE_DIST=$(ls build/distributions/*.zip)
+
+deploy:
+  provider: releases
+  api_key:
+    secure: JBw1mtvZKkFsuprUhksw/IR4Ntap8+2NwXn/WTvYJ6OlOxZMulUf+SCd5X1uZIZt8AQGNZk3WvQQAwjeGrwuC5kANzK0znV89y4WsH25f9IQVDHAc2em9FIWXqoiqsLqUolwpV74LnN2l721Z35vYGsLbZzK4U7HaKBsifzjKXBmPBSZeMgGFfawiIdUQelmHe5cGWq20McKgx7OW+qtsw5PmAU6qM/CenPeyVGd4RcW0SRI2oJ6zhsrAG2fcZz7iSZ5TsO6bVnIlAC1wMZrVdzqz0sgbdQIqWFLrE5spWWLMRqHeyVYP6HCQbzjHbwH2d1FMAOasQox2bGUZTD548QjlZAlksVViQp3CBKwJgHQb9Dy0QrI76iuaR22MznJ9VoC+yUasmZSgkNRBHovDDXiiGv/Woe5e6Z2ER3dA/G21QED7zHq2F3Fn3wyUcuWBe4cLr3HFWu4nv4sCQcKIUrjz5Hz3ca50gmq+P5uQJUl+tNRZJ1qoVezcIA/n5XbGrhTSRZqgIi8GW6NHSnkRv3IRGNMUsH0gK/1SUEnr5L79um1lzaK7F0+OTnMtmyuGT9jPN9/dJx38BlLmXQmfydspMwy9DiamPLQOF7JK8GaD9mD+97/Xg2F8Arjzf5B/iCMht0vnQ1ytZioOpJPwxRZjiOD7/PVW0Rx/ARvWLo=
+  file: "./core/build/libs/*.jar"
+  on:
+    tags: true
+    repo: inkycode/nexus

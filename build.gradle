@@ -1,27 +1,15 @@
 buildscript {
     repositories {
-      jcenter()
-    }
-
-    dependencies {
-		    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
-    }
-}
-
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'com.jfrog.bintray'
-
-    repositories {
         jcenter()
     }
 
     dependencies {
-        compile 'org.slf4j:slf4j-api:1.7.21'
-
-        testCompile 'junit:junit:4.12'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
     }
+}
+
+allprojects {
+    apply plugin: 'java'
 
     ext {
         travisEnabled = System.getenv('TRAVIS') ? true : false
@@ -36,6 +24,21 @@ subprojects {
     version 'local-development'
     if (project.travisEnabled) {
         version = project.travisTag ? project.travisTag : "development-${project.travisBuildNumber}"
+    }
+}
+
+subprojects {
+    apply plugin: 'maven'
+    apply plugin: 'com.jfrog.bintray'
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        compile 'org.slf4j:slf4j-api:1.7.21'
+
+        testCompile 'junit:junit:4.12'
     }
 
     sourceCompatibility = 1.8
@@ -61,7 +64,7 @@ subprojects {
 
         configurations = ['archives']
 
-        dryRun = project.travisTag ? false : true
+        dryRun = true
         publish = project.travisTag ? true : false
 
         pkg {
@@ -77,4 +80,47 @@ subprojects {
             }
         }
     }
+
+    bintrayUpload.onlyIf { project.bintrayUser && project.bintrayApiKey }
+}
+
+// seperate subproject libs and copy them to root project build path
+task libDist(dependsOn: subprojects.build) << {
+    File libFolder = mkdir("${buildDir}/libDist/lib")
+    File sourceFolder = mkdir("${buildDir}/libDist/sources")
+    File javadocFolder = mkdir("${buildDir}/libDist/javadoc")
+
+    subprojects.each {project ->
+        project.tasks.withType(Jar).each {archiveTask ->
+            if (archiveTask.classifier == "sources") {
+                copy {
+                    from archiveTask.archivePath
+                    into sourceFolder
+                }
+            } else if(archiveTask.classifier == "javadoc"){
+                copy {
+                    from archiveTask.archivePath
+                    into javadocFolder
+                }
+            } else{
+                copy {
+                    from archiveTask.archivePath
+                    into libFolder
+                }
+            }
+        }
+    }
+}
+
+// create a zip containing all libs
+task zipDist(type: Zip, dependsOn: libDist) {
+    archiveName "${rootProject.name}-${project.version}.zip"
+
+    into('/') {
+         from {"${buildDir}/libDist"}
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14'
 }
