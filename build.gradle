@@ -64,7 +64,7 @@ subprojects {
 
         configurations = ['archives']
 
-        dryRun = true
+        dryRun = project.travisTag ? false : true
         publish = project.travisTag ? true : false
 
         pkg {
