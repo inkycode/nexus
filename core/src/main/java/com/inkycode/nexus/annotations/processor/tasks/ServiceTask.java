@@ -25,8 +25,8 @@ import com.google.auto.common.BasicAnnotationProcessor.ProcessingStep;
 import com.google.auto.common.MoreElements;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
-import com.inkycode.nexus.ServiceDescriptor;
 import com.inkycode.nexus.annotations.Service;
+import com.inkycode.nexus.descriptors.ServiceDescriptor;
 
 /**
  *

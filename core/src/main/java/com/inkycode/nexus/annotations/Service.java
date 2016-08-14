@@ -38,4 +38,17 @@ public @interface Service {
      * @return the factory service interface.
      */
     Class<?> factory() default Auto.class;
+
+    /**
+     * The service providers priority.
+     *
+     * This value is used to When determining which service provider to return
+     * if multiple service providers are available.
+     *
+     * A priority of Integer.MAX_VALUE will be higher than one of
+     * Integer.MIN_VALUE.
+     *
+     * @return the priority.
+     */
+    int priority() default 0;
 }

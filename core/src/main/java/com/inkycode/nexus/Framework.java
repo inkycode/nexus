@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.inject.Inject;
 
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inkycode.nexus.descriptors.ServiceDescriptor;
 
 /**
  *
@@ -26,6 +29,10 @@ public class Framework {
     private static Logger LOG = LoggerFactory.getLogger(Framework.class);
 
     private static Framework framework;
+
+    private final Map<Class<?>, Set<ServiceInstance<?>>> serviceMap;
+
+    private final Map<Class<?>, Set<ServiceInstance<?>>> serviceFactoryMap;
 
     /**
      * Factory method to generate a Framework instance.
@@ -40,49 +47,39 @@ public class Framework {
         return framework;
     }
 
-    private final Map<Class<?>, Object> serviceMap;
-    private final Map<Class<?>, Object> factoryMap;
-
     private Framework() {
-        this.serviceMap = new HashMap<Class<?>, Object>();
-        this.factoryMap = new HashMap<Class<?>, Object>();
+        this.serviceMap = new HashMap<Class<?>, Set<ServiceInstance<?>>>();
+        this.serviceFactoryMap = new HashMap<Class<?>, Set<ServiceInstance<?>>>();
 
         try {
             final Enumeration<URL> servicesUrls = this.getClass().getClassLoader().getResources("META-INF/services.json");
+
             while (servicesUrls.hasMoreElements()) {
                 try (InputStream inputStream = servicesUrls.nextElement().openStream()) {
                     final ServiceDescriptor[] services = new ObjectMapper().reader().withType(ServiceDescriptor[].class).readValue(inputStream);
 
                     for (final ServiceDescriptor service : services) {
+
                         try {
-                            final Class<?> serviceClass = Class.forName(service.getService());
-                            final Class<?> serviceProviderClass = Class.forName(service.getProvider());
-                            final Class<?> serviceFactoryClass = service.getFactory() != null ? Class.forName(service.getFactory()) : null;
+                            final Class<?> serviceClass = Class.forName(service.getService().getName());
+                            final Class<?> serviceProviderClass = Class.forName(service.getProvider().getName());
+                            final Class<?> serviceFactoryClass = service.getFactory() != null ? Class.forName(service.getFactory().getName()) : null;
+                            final int priority = service.getPriority();
 
-                            if (serviceClass != null && serviceProviderClass != null) {
-                                try {
-                                    final Object serviceInstance = serviceProviderClass.newInstance();
+                            final Set<ServiceInstance<?>> serviceInstanceSet = this.serviceMap.containsKey(serviceClass) ? this.serviceMap.get(serviceClass) : new TreeSet<ServiceInstance<?>>();
 
-                                    if (serviceFactoryClass != null) {
-                                        this.factoryMap.put(serviceFactoryClass, serviceInstance);
+                            final ServiceInstance<?> serviceInstance = ServiceInstance.getInstance(serviceProviderClass, priority);
 
-                                        for (final Class<?> registeredService : this.serviceMap.keySet()) {
-                                            final Object registeredServiceInstance = this.serviceMap.get(registeredService);
+                            serviceInstanceSet.add(serviceInstance);
 
-                                            if (serviceFactoryClass.isInstance(registeredServiceInstance)) {
-                                                this.notifyFactory(serviceInstance, registeredServiceInstance, registeredService);
-                                            }
-                                        }
-                                    }
+                            this.serviceMap.put(serviceClass, serviceInstanceSet);
 
-                                    this.serviceMap.put(serviceClass, serviceInstance);
-
-                                } catch (final ReflectiveOperationException e) {
-                                    LOG.error("Unable to register service");
-                                }
+                            if (serviceFactoryClass != null) {
+                                this.serviceFactoryMap.put(serviceFactoryClass, serviceInstanceSet);
                             }
-                        } catch (final ClassNotFoundException e) {
-                            LOG.error("Unable to find service, service provider or service factory");
+
+                        } catch (final Exception e) {
+                            LOG.error("Unable to register service");
                         }
                     }
                 } catch (final IOException e) {
@@ -90,9 +87,23 @@ public class Framework {
                 }
             }
 
-            for (final Object serviceProider : this.serviceMap.values()) {
-                this.injectServices(serviceProider.getClass(), serviceProider);
+            for (final Set<ServiceInstance<?>> serviceInstanceSet : this.serviceMap.values()) {
+                for (final ServiceInstance<?> serviceInstance : serviceInstanceSet) {
+                    this.injectServices(serviceInstance.getInstance().getClass(), serviceInstance.getInstance());
+                }
             }
+
+            for (final Class<?> service : this.serviceMap.keySet()) {
+                for (final ServiceInstance<?> serviceInstance : this.serviceMap.get(service)) {
+
+                    if (this.serviceFactoryMap.containsKey(service)) {
+                        for (final ServiceInstance<?> factoryServiceInstance : this.serviceFactoryMap.get(service)) {
+                            this.notifyFactory(factoryServiceInstance.getInstance(), serviceInstance.getInstance(), service);
+                        }
+                    }
+                }
+            }
+
         } catch (final IOException e) {
             LOG.error("Unable to read service properties");
         }
@@ -103,6 +114,7 @@ public class Framework {
         for (final Field field : serviceInstanceClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(Inject.class)) {
                 field.setAccessible(true);
+
                 try {
                     field.set(serviceInstance, this.getService(field.getType()));
                 } catch (final ReflectiveOperationException e) {
@@ -147,10 +159,43 @@ public class Framework {
     @SuppressWarnings("unchecked")
     public <T> T getService(final Class<T> service) {
         if (this.serviceMap.containsKey(service)) {
-            return (T) this.serviceMap.get(service);
+            return ((ServiceInstance<T>) this.serviceMap.get(service).toArray()[0]).getInstance();
         }
 
         return null;
+    }
+
+    private static class ServiceInstance<T> implements Comparable<ServiceInstance<T>> {
+
+        private final T instance;
+
+        private final int priority;
+
+        private ServiceInstance(final Class<T> service, final int priority) throws InstantiationException, IllegalAccessException {
+            this.instance = service.newInstance();
+
+            this.priority = priority;
+        }
+
+        private T getInstance() {
+            return this.instance;
+        }
+
+        private int getPriority() {
+            return this.priority;
+        }
+
+        @Override
+        public int compareTo(final ServiceInstance<T> b) {
+            if (this.getPriority() == b.getPriority())
+                return 0;
+
+            return this.getPriority() > b.getPriority() ? -1 : 1;
+        }
+
+        private static <K> ServiceInstance<K> getInstance(final Class<K> type, final int priority) throws InstantiationException, IllegalAccessException {
+            return new ServiceInstance<K>(type, priority);
+        }
     }
 
 }
