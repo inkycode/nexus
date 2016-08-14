@@ -2,11 +2,6 @@
 
 A tiny service framework for Java.
 
-## Build
-```
-$ gradlew clean build
-```
-
 ## Simple services
 ```java
 interface HelloWorldService {
