@@ -10,4 +10,4 @@ dependencies {
 
 mainClassName = "${project.group}.Demo"
 
-archivesBaseName = "${rootProject.name}-demo"
+archivesBaseName = "${rootProject.name}-${project.name}"

@@ -1,0 +1,26 @@
+apply plugin: 'com.jfrog.bintray'
+
+bintray {
+    user = project.bintrayUser
+    key = project.bintrayApiKey
+
+    configurations = ['archives']
+
+    dryRun = project.travisTag ? false : true
+    publish = project.travisTag ? true : false
+
+    pkg {
+        repo = 'maven'
+        name = "${rootProject.name}-${project.name}"
+        licenses = ['MIT']
+        websiteUrl = 'https://github.com/inkycode/nexus'
+        issueTrackerUrl = 'https://github.com/inkycode/nexus/issues'
+        vcsUrl = 'https://github.com/inkycode/nexus.git'
+        version {
+            name = project.version
+            released = new Date()
+        }
+    }
+}
+
+bintrayUpload.onlyIf { project.bintrayUser && project.bintrayApiKey }

@@ -28,9 +28,6 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'maven'
-    apply plugin: 'com.jfrog.bintray'
-
     repositories {
         jcenter()
     }
@@ -44,47 +41,16 @@ subprojects {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
+    if (!(project.name == 'demo')) {
+        // generate sources and jdoc jars
+        apply from: rootProject.file('library.gradle')
+        
+        // deploy to bintray
+        apply from: rootProject.file('bintray.gradle')
     }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-
-    artifacts {
-        archives sourcesJar, javadocJar
-    }
-
-    bintray {
-        user = project.bintrayUser
-        key = project.bintrayApiKey
-
-        configurations = ['archives']
-
-        dryRun = project.travisTag ? false : true
-        publish = project.travisTag ? true : false
-
-        pkg {
-            repo = 'maven'
-            name = project.group
-            licenses = ['MIT']
-            websiteUrl = 'https://github.com/inkycode/nexus'
-            issueTrackerUrl = 'https://github.com/inkycode/nexus/issues'
-            vcsUrl = 'https://github.com/inkycode/nexus.git'
-            version {
-                name = project.version
-                released = new Date()
-            }
-        }
-    }
-
-    bintrayUpload.onlyIf { project.bintrayUser && project.bintrayApiKey }
 }
 
-// seperate subproject libs and copy them to root project build path
+// separate subproject libs and copy them to root project build path
 task libDist(dependsOn: subprojects.build) << {
     File libFolder = mkdir("${buildDir}/libDist/lib")
     File sourceFolder = mkdir("${buildDir}/libDist/sources")

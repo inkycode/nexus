@@ -5,4 +5,4 @@ dependencies {
             'com.fasterxml.jackson.core:jackson-databind:2.0.1'
 }
 
-archivesBaseName = "${rootProject.name}-core"
+archivesBaseName = "${rootProject.name}-${project.name}"
