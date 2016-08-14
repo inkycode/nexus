@@ -188,7 +188,7 @@ public class Framework {
         @Override
         public int compareTo(final ServiceInstance<T> b) {
             if (this.getPriority() == b.getPriority())
-                return 0;
+                return 1;
 
             return this.getPriority() > b.getPriority() ? -1 : 1;
         }
