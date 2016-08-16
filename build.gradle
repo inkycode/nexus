@@ -10,6 +10,8 @@ buildscript {
 
 allprojects {
     apply plugin: 'java'
+    
+    compileJava.options.encoding = 'UTF-8'
 
     ext {
         travisEnabled = System.getenv('TRAVIS') ? true : false

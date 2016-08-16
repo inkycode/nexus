@@ -25,6 +25,8 @@ public class HelloWorldServiceImpl implements HelloWorldService {
 /* ... */
 
 public static void main(String[] args) {
+    Framework.getInstance().start();
+
     Framework.getInstance().getService(HelloWorldService.class).sayHello();
 }
 

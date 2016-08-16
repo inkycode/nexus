@@ -3,6 +3,7 @@ package com.inkycode.nexus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
@@ -124,19 +125,36 @@ public class Framework {
     private void notifyFactory(final Object factoryInstance, final Object serviceInstance, final Class<?> service) {
         final Class<?> factoryClass = factoryInstance.getClass();
 
-        try {
-            final Method bindValueMethod = factoryClass.getMethod("bindValue", service);
+        for (final Method method : factoryClass.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(Inject.class)) {
+                final Class<?>[] methodParameterTypes = method.getParameterTypes();
 
-            if (bindValueMethod != null) {
-                try {
-                    bindValueMethod.invoke(factoryInstance, serviceInstance);
-                } catch (final ReflectiveOperationException e) {
-                    LOG.error("Unable to invoke bind method");
+                // The method must have one parameter and it must be instance
+                // assignable by the service instance.
+                if (methodParameterTypes.length == 1 && methodParameterTypes[0].isInstance(serviceInstance)) {
+                    try {
+                        method.invoke(factoryInstance, serviceInstance);
+                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                        LOG.error("Unable to invoke service instance bind method, check the method signature.");
+                    }
                 }
             }
-        } catch (final NoSuchMethodException e) {
-            LOG.error("Unable to bind value method");
+
         }
+        // try {
+        // final Method bindValueMethod = factoryClass.getMethod("bindValue",
+        // service);
+        //
+        // if (bindValueMethod != null) {
+        // try {
+        // bindValueMethod.invoke(factoryInstance, serviceInstance);
+        // } catch (final ReflectiveOperationException e) {
+        // LOG.error("Unable to invoke bind method");
+        // }
+        // }
+        // } catch (final NoSuchMethodException e) {
+        // LOG.error("Unable to bind value method");
+        // }
     }
 
     /**
