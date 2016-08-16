@@ -117,6 +117,49 @@ public class ServiceDescriptor {
     }
 
     /**
+     * Obtain the service class described.
+     *
+     * @return the service class, or null if the class was not found.
+     */
+    @JsonIgnore
+    public Class<?> getServiceClass() {
+        try {
+            return Class.forName(this.getService().getName());
+        } catch (final ClassNotFoundException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Obtain the provider class described.
+     *
+     * @return the provider class, or null if the class was not found.
+     */
+    @JsonIgnore
+    public Class<?> getProviderClass() {
+        try {
+            return Class.forName(this.getProvider().getName());
+        } catch (final ClassNotFoundException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Obtain the factory class described.
+     *
+     * @return the factory class, or null if no factory class was defined or the
+     *         class was not found.
+     */
+    @JsonIgnore
+    public Class<?> getFactoryClass() {
+        try {
+            return this.getFactory() != null ? Class.forName(this.getFactory().getName()) : null;
+        } catch (final ClassNotFoundException e) {
+            return null;
+        }
+    }
+
+    /**
      * Determines if the service descriptor is valid.
      *
      * @return true if valid, false otherwise.

@@ -50,64 +50,44 @@ public class Framework {
     private Framework() {
         this.serviceMap = new HashMap<Class<?>, Set<ServiceInstance<?>>>();
         this.serviceFactoryMap = new HashMap<Class<?>, Set<ServiceInstance<?>>>();
+    }
 
-        try {
-            final Enumeration<URL> servicesUrls = this.getClass().getClassLoader().getResources("META-INF/services.json");
+    private void registerService(final ServiceDescriptor serviceDescriptor) throws IllegalAccessException, InstantiationException {
+        final Class<?> serviceClass = serviceDescriptor.getServiceClass();
+        final Class<?> serviceProviderClass = serviceDescriptor.getProviderClass();
+        final Class<?> serviceFactoryClass = serviceDescriptor.getFactoryClass();
+        final int priority = serviceDescriptor.getPriority();
 
-            while (servicesUrls.hasMoreElements()) {
-                try (InputStream inputStream = servicesUrls.nextElement().openStream()) {
-                    final ServiceDescriptor[] services = new ObjectMapper().reader().withType(ServiceDescriptor[].class).readValue(inputStream);
-
-                    for (final ServiceDescriptor service : services) {
-
-                        try {
-                            final Class<?> serviceClass = Class.forName(service.getService().getName());
-                            final Class<?> serviceProviderClass = Class.forName(service.getProvider().getName());
-                            final Class<?> serviceFactoryClass = service.getFactory() != null ? Class.forName(service.getFactory().getName()) : null;
-                            final int priority = service.getPriority();
-
-                            final Set<ServiceInstance<?>> serviceInstanceSet = this.serviceMap.containsKey(serviceClass) ? this.serviceMap.get(serviceClass) : new TreeSet<ServiceInstance<?>>();
-
-                            final ServiceInstance<?> serviceInstance = ServiceInstance.getInstance(serviceProviderClass, priority);
-
-                            serviceInstanceSet.add(serviceInstance);
-
-                            this.serviceMap.put(serviceClass, serviceInstanceSet);
-
-                            if (serviceFactoryClass != null) {
-                                this.serviceFactoryMap.put(serviceFactoryClass, serviceInstanceSet);
-                            }
-
-                        } catch (final Exception e) {
-                            LOG.error("Unable to register service");
-                        }
-                    }
-                } catch (final IOException e) {
-                    LOG.error("Invalid service properties");
-                }
-            }
-
-            for (final Set<ServiceInstance<?>> serviceInstanceSet : this.serviceMap.values()) {
-                for (final ServiceInstance<?> serviceInstance : serviceInstanceSet) {
-                    this.injectServices(serviceInstance.getInstance().getClass(), serviceInstance.getInstance());
-                }
-            }
-
-            for (final Class<?> service : this.serviceMap.keySet()) {
-                for (final ServiceInstance<?> serviceInstance : this.serviceMap.get(service)) {
-
-                    if (this.serviceFactoryMap.containsKey(service)) {
-                        for (final ServiceInstance<?> factoryServiceInstance : this.serviceFactoryMap.get(service)) {
-                            this.notifyFactory(factoryServiceInstance.getInstance(), serviceInstance.getInstance(), service);
-                        }
-                    }
-                }
-            }
-
-        } catch (final IOException e) {
-            LOG.error("Unable to read service properties");
+        if (serviceClass != null && serviceProviderClass != null) {
+            this.registerService(serviceClass, serviceProviderClass, serviceFactoryClass, priority);
         }
 
+        // TODO: do something here
+    }
+
+    private void registerService(final Class<?> service, final Class<?> provider, final Class<?> factory, final int priority) throws IllegalAccessException, InstantiationException {
+        // If we already have a set for this service in the
+        // service map then use that, otherwise create a new
+        // set.
+        final Set<ServiceInstance<?>> serviceInstanceSet = this.serviceMap.containsKey(service) ? this.serviceMap.get(service) : new TreeSet<ServiceInstance<?>>();
+
+        final ServiceInstance<?> serviceInstance = ServiceInstance.getInstance(provider, priority);
+
+        serviceInstanceSet.add(serviceInstance);
+
+        this.serviceMap.put(service, serviceInstanceSet);
+
+        if (factory != null) {
+            this.serviceFactoryMap.put(factory, serviceInstanceSet);
+        }
+    }
+
+    private void injectServices(final Map<Class<?>, Set<ServiceInstance<?>>> serviceMap) {
+        for (final Set<ServiceInstance<?>> serviceInstanceSet : serviceMap.values()) {
+            for (final ServiceInstance<?> serviceInstance : serviceInstanceSet) {
+                this.injectServices(serviceInstance.getInstance().getClass(), serviceInstance.getInstance());
+            }
+        }
     }
 
     private <T> void injectServices(final Class<?> serviceInstanceClass, final T serviceInstance) {
@@ -128,6 +108,19 @@ public class Framework {
         }
     }
 
+    private void notifyFactories(final Map<Class<?>, Set<ServiceInstance<?>>> serviceMap, final Map<Class<?>, Set<ServiceInstance<?>>> serviceFactoryMap) {
+        for (final Class<?> service : serviceMap.keySet()) {
+            for (final ServiceInstance<?> serviceInstance : serviceMap.get(service)) {
+
+                if (serviceFactoryMap.containsKey(service)) {
+                    for (final ServiceInstance<?> factoryServiceInstance : serviceFactoryMap.get(service)) {
+                        this.notifyFactory(factoryServiceInstance.getInstance(), serviceInstance.getInstance(), service);
+                    }
+                }
+            }
+        }
+    }
+
     private void notifyFactory(final Object factoryInstance, final Object serviceInstance, final Class<?> service) {
         final Class<?> factoryClass = factoryInstance.getClass();
 
@@ -143,6 +136,41 @@ public class Framework {
             }
         } catch (final NoSuchMethodException e) {
             LOG.error("Unable to bind value method");
+        }
+    }
+
+    /**
+     * Starts the framework and initializes services from the services metadata
+     * file.
+     */
+    public void start() {
+        try {
+            final Enumeration<URL> servicesUrls = this.getClass().getClassLoader().getResources("META-INF/services.json");
+
+            while (servicesUrls.hasMoreElements()) {
+                try (InputStream inputStream = servicesUrls.nextElement().openStream()) {
+                    final ServiceDescriptor[] serviceDescriptors = new ObjectMapper().reader().withType(ServiceDescriptor[].class).readValue(inputStream);
+
+                    for (final ServiceDescriptor serviceDescriptor : serviceDescriptors) {
+
+                        try {
+                            this.registerService(serviceDescriptor);
+                        } catch (final IllegalAccessException | InstantiationException e) {
+                            LOG.error("Unable to register service");
+                        }
+
+                    }
+                } catch (final IOException e) {
+                    LOG.error("Invalid service properties");
+                }
+            }
+
+            this.injectServices(this.serviceMap);
+
+            this.notifyFactories(this.serviceMap, this.serviceFactoryMap);
+
+        } catch (final IOException e) {
+            LOG.error("Unable to read service properties");
         }
     }
 
