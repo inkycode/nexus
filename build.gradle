@@ -17,9 +17,6 @@ allprojects {
         travisEnabled = System.getenv('TRAVIS') ? true : false
         travisTag = System.getenv('TRAVIS_TAG')
         travisBuildNumber = System.getenv('TRAVIS_BUILD_NUMBER')
-
-        bintrayUser = System.getenv('BINTRAY_USER')
-        bintrayApiKey = System.getenv('BINTRAY_API_KEY')
     }
 
     group 'com.inkycode.nexus'
@@ -59,21 +56,23 @@ task libDist(dependsOn: subprojects.build) << {
     File javadocFolder = mkdir("${buildDir}/libDist/javadoc")
 
     subprojects.each {project ->
-        project.tasks.withType(Jar).each {archiveTask ->
-            if (archiveTask.classifier == "sources") {
-                copy {
-                    from archiveTask.archivePath
-                    into sourceFolder
-                }
-            } else if(archiveTask.classifier == "javadoc"){
-                copy {
-                    from archiveTask.archivePath
-                    into javadocFolder
-                }
-            } else{
-                copy {
-                    from archiveTask.archivePath
-                    into libFolder
+        if (!project.hasProperty('mainClassName')) {
+            project.tasks.withType(Jar).each {archiveTask ->
+                if (archiveTask.classifier == "sources") {
+                    copy {
+                        from archiveTask.archivePath
+                        into sourceFolder
+                    }
+                } else if(archiveTask.classifier == "javadoc"){
+                    copy {
+                        from archiveTask.archivePath
+                        into javadocFolder
+                    }
+                } else{
+                    copy {
+                        from archiveTask.archivePath
+                        into libFolder
+                    }
                 }
             }
         }
