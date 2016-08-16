@@ -12,7 +12,7 @@ import com.inkycode.nexus.services.GreetingService;
 @Service(factory = GreetingService.class)
 public class GreeterServiceImpl implements GreeterService {
 
-    Map<Class<? extends GreetingService>, GreetingService> greetings = new HashMap<Class<? extends GreetingService>, GreetingService>();
+    private final Map<Class<? extends GreetingService>, GreetingService> greetings = new HashMap<Class<? extends GreetingService>, GreetingService>();
 
     @Override
     public void greet(final Class<? extends GreetingService> greeter) {
