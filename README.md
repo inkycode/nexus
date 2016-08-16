@@ -57,6 +57,8 @@ public class CommandServiceImpl implements CommandService {
 /* ... */
 
 public static void main(String[] args) {
+    Framework.getInstance().start();
+
     Framework.getInstance().getService(CommandService.class).run();
 }
 
