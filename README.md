@@ -82,19 +82,45 @@ interface GreeterService {
 
 /* ... */
 
+@Service
+public class EnglishGreeting implements GreetingService {
 
+    @Override
+    public String getGreeting() {
+        return "Hello, kind sir.";
+    }
+
+}
+
+/* ... */
+
+@Service
+public class FrenchGreeting implements GreetingService {
+
+    @Override
+    public String getGreeting() {
+        return "bonjour.";
+    };
+
+}
 
 /* ... */
 
 @Service
 public class GreeterServiceImpl implements GreeterService {
 
-    Map<Class<? extends GreetingService>, GreetingService> greetings = new HashMap<Class<? extends GreetingService>, GreetingService>();
+    private final Map<Class<? extends GreetingService>, GreetingService> greetings = new HashMap<Class<? extends GreetingService>, GreetingService>();
 
     @Override
-    public void run() {
-        helloWorldService.sayHello();
-        helloWorldService.sayHello();
+    public void greet(Class<? extends GreetingService> greeting) {
+        if (this.greetings.containsKey(greeter)) {
+            System.out.println(this.greetings.get(greeter).getGreeting());
+        }
+    }
+
+    @Inject
+    public void addGreeting(final GreetingService greeting) {
+        this.greetings.put(greeting.getClass(), greeting);
     }
 
 }
@@ -104,6 +130,8 @@ public class GreeterServiceImpl implements GreeterService {
 public static void main(String[] args) {
     Framework.getInstance().start();
 
-    Framework.getInstance().getService(CommandService.class).run();
+    final GreeterService greeter = Framework.getInstance().getService(GreeterService.class);
+    greeter.greet(EnglishGreeting.class);
+    greeter.greet(FrenchGreeting.class);
 }
 ```
